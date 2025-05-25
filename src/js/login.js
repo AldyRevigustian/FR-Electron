@@ -14,7 +14,13 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const result = await window.electronAPI.login({ email, password });
             if (result.success) {
-                // alert('Login successful!');
+                localStorage.setItem('auth.token', result.token);
+                localStorage.setItem('auth.email', result.user.email);
+                localStorage.setItem('auth.name', result.user.nama);
+
+                // Simpan kelas ke localStorage
+                localStorage.setItem('auth.kelas', JSON.stringify(result.kelas));
+
                 window.electronAPI.navigate('selection'); // Navigate to selection page
             } else {
                 errorMessage.textContent = result.message || 'Login failed.';

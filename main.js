@@ -67,12 +67,25 @@ ipcMain.handle('login', async (event, { email, password }) => {
       store.set('auth.email', resData.user.email);
       store.set('auth.name', resData.user.nama);
 
+      const res = await fetch('http://127.0.0.1:8000/api/guru/kelas', {
+        headers: {
+          'Authorization': `Bearer ${resData.token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+      const kelasData = await res.json();
+      // console.log(kelasData);
+      console.log('Kelas data:', kelasData.data);
+
       return {
         success: true,
         message: resData.message,
         user: resData.user,
         token: resData.token,
+        kelas: kelasData.data
       };
+
     } else {
       return { success: false, message: 'Login gagal: data token atau user tidak ditemukan' };
     }
@@ -96,7 +109,7 @@ ipcMain.on('start-recognition', (event, { classId, className, courseId, courseNa
     pythonProcess.kill();
   }
 
-  const projectPath = app.getAppPath(); 
+  const projectPath = app.getAppPath();
   const paramsForPython = JSON.stringify({
     selected_class_id: classId,
     selected_class_name: className,

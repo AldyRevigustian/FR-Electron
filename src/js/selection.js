@@ -1,31 +1,37 @@
-// src/js/selection.js
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const selectionForm = document.getElementById('selectionForm');
     const classSelect = document.getElementById('classSelect');
     const startButton = document.getElementById('startButton');
     const pythonMessages = document.getElementById('pythonMessages');
 
-    // --- Populate Class dropdown ---
-    const classes = [
-        { id: 1, name: "Kelas A Pagi" },
-        { id: 2, name: "Kelas B Sore" },
-        { id: 3, name: "Kelas C Malam" },
-        { id: 4, name: "Kelas D Weekend" }
-    ];
+    // 🔄 Ambil data kelas dari electron-store
+    try {
+        const classSelect = document.getElementById('classSelect');
+        const kelas = JSON.parse(localStorage.getItem('auth.kelas') || '[]');
 
-    classes.forEach(cls => {
-        const option = document.createElement('option');
-        option.value = cls.id;
-        option.textContent = cls.name;
-        classSelect.appendChild(option);
-    });
+        kelas.forEach(k => {
+            const option = document.createElement('option');
+            option.value = k.id;
+            option.textContent = k.nama;
+            classSelect.appendChild(option);
+        });
 
+        // Ambil token dari localStorage jika perlu buat API lagi
+        const token = localStorage.getItem('auth.token');
+        console.log('Token:', token);
+
+    } catch (error) {
+        console.error('Gagal memuat data kelas dari store:', error);
+        pythonMessages.innerHTML = `<p class="error">Gagal memuat daftar kelas: ${error.message}</p>`;
+        return;
+    }
+
+    // ⏯ Saat form disubmit (memulai absensi)
     selectionForm.addEventListener('submit', (event) => {
         event.preventDefault();
-        pythonMessages.innerHTML = ''; // Clear previous messages
+        pythonMessages.innerHTML = '';
 
         const selectedClassOption = classSelect.options[classSelect.selectedIndex];
-
         if (!selectedClassOption || !selectedClassOption.value) {
             pythonMessages.innerHTML = '<p class="error">Silakan pilih kelas terlebih dahulu!</p>';
             return;
@@ -34,8 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const params = {
             classId: parseInt(selectedClassOption.value),
             className: selectedClassOption.text,
-            courseId: null, // Remove course requirement
-            courseName: null, // Remove course requirement
+            courseId: null,
+            courseName: null,
         };
 
         console.log('Starting recognition with:', params);
@@ -45,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pythonMessages.innerHTML = '<p class="info">Memulai proses absensi...</p>';
     });
 
-    // Listen for messages from Python script
+    // ⛔ Jika Python error
     window.electronAPI.onPythonError((message) => {
         const p = document.createElement('p');
         p.className = 'error';
@@ -55,6 +61,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.innerHTML = '<span>Mulai Absensi</span>';
     });
 
+    // ✅ Jika absensi selesai
     window.electronAPI.onRecognitionFinished((message) => {
         const p = document.createElement('p');
         p.className = 'success';
@@ -64,7 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         startButton.innerHTML = '<span>Mulai Absensi</span>';
     });
 
-    // Clean up listeners when the page is about to be unloaded
+    // 🧹 Cleanup listener saat halaman ditutup
     window.addEventListener('beforeunload', () => {
         window.electronAPI.removeAllPythonErrorListeners();
         window.electronAPI.removeAllRecognitionFinishedListeners();
