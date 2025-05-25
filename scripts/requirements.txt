@@ -1,0 +1,11 @@
+numpy
+pillow
+facenet-pytorch
+imgaug
+torch
+torchvision
+opencv-python
+joblib
+mysql-connector-python
+scikit-learn
+python-dotenv

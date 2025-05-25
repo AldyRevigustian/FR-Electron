@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pilih Kelas & Mata Kuliah</title>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Pilih Kelas dan Mata Kuliah</h1>
+        <form id="selectionForm">
+            <div>
+                <label for="classSelect">Pilih Kelas:</label>
+                <select id="classSelect" name="classSelect" required></select>
+            </div>
+            <div>
+                <label for="courseSelect">Pilih Mata Kuliah:</label>
+                <select id="courseSelect" name="courseSelect" required></select>
+            </div>
+            <button type="submit" id="startButton">Mulai Absensi</button>
+        </form>
+        <div id="pythonMessages"></div>
+    </div>
+    <script src="../js/selection.js"></script>
+</body>
+</html>
