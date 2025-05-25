@@ -1,25 +1,64 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Guru Login</title>
     <link rel="stylesheet" href="../css/style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
+
 <body>
     <div class="container">
-        <h1>Login Guru</h1>
+        <div class="login-header">
+            <div class="icon-wrapper">
+                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="8" r="3" fill="url(#gradient1)" />
+                    <path d="M12 14c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6z" fill="url(#gradient2)" />
+                    <defs>
+                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
+                        </linearGradient>
+                        <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <div class="icon-glow"></div>
+            </div>
+            <h1>Login Guru</h1>
+        </div>
         <form id="loginForm">
-            <div>
-                <label for="email">Email:</label>
-                <input type="text" id="email" name="email" required>
+            <div class="input-group">
+                <div class="input-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M20 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4ZM20 8L12 13L4 8V6L12 11L20 6V8Z"
+                            fill="#7A78AA" />
+                    </svg>
+                </div>
+                <label for="email">Email</label>
+                <input type="text" id="email" name="email" required placeholder="Masukkan email Anda">
             </div>
-            <div>
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit">Login</button>
+            <div class="input-group">
+                <div class="input-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path
+                            d="M18,8A6,6 0 0,0 12,2A6,6 0 0,0 6,8V10H5A2,2 0 0,0 3,12V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V12A2,2 0 0,0 19,10H18V8M12,4A4,4 0 0,1 16,8V10H8V8A4,4 0 0,1 12,4Z"
+                            fill="#7A78AA" />
+                    </svg>
+                </div>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Masukkan password Anda">
+            </div> <button type="submit">
+                <span>Login</span>
+            </button>
             <p id="errorMessage" class="error-message"></p>
         </form>
     </div>
     <script src="../js/login.js"></script>
 </body>
+
 </html>
