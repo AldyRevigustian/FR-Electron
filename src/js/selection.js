@@ -1,20 +1,16 @@
 // src/js/selection.js
 document.addEventListener('DOMContentLoaded', () => {
     const selectionForm = document.getElementById('selectionForm');
-    const classSelect = document.getElementById('classSelect'); // Assuming <select id="classSelect">
-    const courseSelect = document.getElementById('courseSelect'); // Assuming <select id="courseSelect">
+    const classSelect = document.getElementById('classSelect');
     const startButton = document.getElementById('startButton');
     const pythonMessages = document.getElementById('pythonMessages');
 
-    // --- Populate Class and Course dropdowns (Example: hardcoded) ---
-    // In a real app, fetch these from your database via IPC
+    // --- Populate Class dropdown ---
     const classes = [
         { id: 1, name: "Kelas A Pagi" },
-        { id: 2, name: "Kelas B Sore" }
-    ];
-    const courses = [
-        { id: 101, name: "Pemrograman Dasar" },
-        { id: 102, name: "Kecerdasan Buatan" }
+        { id: 2, name: "Kelas B Sore" },
+        { id: 3, name: "Kelas C Malam" },
+        { id: 4, name: "Kelas D Weekend" }
     ];
 
     classes.forEach(cls => {
@@ -24,34 +20,29 @@ document.addEventListener('DOMContentLoaded', () => {
         classSelect.appendChild(option);
     });
 
-    courses.forEach(course => {
-        const option = document.createElement('option');
-        option.value = course.id;
-        option.textContent = course.name;
-        courseSelect.appendChild(option);
-    });
-    // --- End of example population ---
-
-
     selectionForm.addEventListener('submit', (event) => {
         event.preventDefault();
         pythonMessages.innerHTML = ''; // Clear previous messages
 
         const selectedClassOption = classSelect.options[classSelect.selectedIndex];
-        const selectedCourseOption = courseSelect.options[courseSelect.selectedIndex];
+
+        if (!selectedClassOption || !selectedClassOption.value) {
+            pythonMessages.innerHTML = '<p class="error">Silakan pilih kelas terlebih dahulu!</p>';
+            return;
+        }
 
         const params = {
             classId: parseInt(selectedClassOption.value),
             className: selectedClassOption.text,
-            courseId: parseInt(selectedCourseOption.value),
-            courseName: selectedCourseOption.text,
+            courseId: null, // Remove course requirement
+            courseName: null, // Remove course requirement
         };
 
         console.log('Starting recognition with:', params);
         window.electronAPI.startRecognition(params);
         startButton.disabled = true;
-        pythonMessages.innerHTML = '<p>Starting recognition process...</p>';
-
+        startButton.innerHTML = '<span>Memulai...</span>';
+        pythonMessages.innerHTML = '<p class="info">Memulai proses absensi...</p>';
     });
 
     // Listen for messages from Python script
@@ -60,7 +51,8 @@ document.addEventListener('DOMContentLoaded', () => {
         p.className = 'error';
         p.textContent = `Error: ${message}`;
         pythonMessages.appendChild(p);
-        startButton.disabled = false; // Re-enable button on error
+        startButton.disabled = false;
+        startButton.innerHTML = '<span>Mulai Absensi</span>';
     });
 
     window.electronAPI.onRecognitionFinished((message) => {
@@ -68,11 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
         p.className = 'success';
         p.textContent = message;
         pythonMessages.appendChild(p);
-        startButton.disabled = false; // Re-enable button
+        startButton.disabled = false;
+        startButton.innerHTML = '<span>Mulai Absensi</span>';
     });
 
     // Clean up listeners when the page is about to be unloaded
-    // This is important if you navigate away and back to this page.
     window.addEventListener('beforeunload', () => {
         window.electronAPI.removeAllPythonErrorListeners();
         window.electronAPI.removeAllRecognitionFinishedListeners();

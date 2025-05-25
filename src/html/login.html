@@ -10,19 +10,23 @@
 
 <body>
     <div class="container">
-        <div class="login-header">
-            <div class="icon-wrapper">
-                <svg width="50" height="50" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="8" r="3" fill="url(#gradient1)" />
-                    <path d="M12 14c-4 0-8 2-8 6v2h16v-2c0-4-4-6-8-6z" fill="url(#gradient2)" />
+        <div class="login-header">            <div class="icon-wrapper">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Graduation Cap -->
+                    <path d="M12 3L1 9L12 15L21 10.09V17H23V9L12 3Z" fill="white" />
+                    <path d="M5 13.18V17.18C5 19.45 8.69 21 12 21C15.31 21 19 19.45 19 17.18V13.18L12 15.82L5 13.18Z" fill="white" />
+                    <!-- Tassel -->
+                    <circle cx="21" cy="10" r="1.5" fill="white" />
+                    <path d="M21 11.5L21 14.5" stroke="url(#tasselGradient)" stroke-width="1.5" stroke-linecap="round" />
                     <defs>
-                        <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id="capGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
+                            <stop offset="50%" style="stop-color:#F0F0F0;stop-opacity:1" />
                             <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
                         </linearGradient>
-                        <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" style="stop-color:#FFFFFF;stop-opacity:1" />
-                            <stop offset="100%" style="stop-color:#E0E0E0;stop-opacity:1" />
+                        <linearGradient id="tasselGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#FFD700;stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:#FFA500;stop-opacity:1" />
                         </linearGradient>
                     </defs>
                 </svg>

@@ -55,7 +55,7 @@ ipcMain.handle('login', async (event, { email, password }) => {
   data.append('password', password);
 
   try {
-    const response = await axios.post(URL_API + '/dosen/login', data, {
+    const response = await axios.post(URL_API + '/guru/login', data, {
       headers: data.getHeaders(),
       maxBodyLength: Infinity,
     });
