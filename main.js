@@ -6,19 +6,38 @@ const { spawn } = require('child_process');
 require('dotenv').config();
 
 const ElectronStore = require('electron-store').default;
+const ModelDownloader = require('./modelDownloader'); // Import model downloader
+
 const store = new ElectronStore();
 let mainWindow;
 let pythonProcess;
+let modelDownloader;
+let modelsReady = false;
 
 const PYTHON_EXECUTABLE = process.platform === 'win32' ? 'python' : 'python3';
 const PYTHON_SCRIPT_PATH = path.join(__dirname, '/scripts/', 'main.py');
 const envFilePath = path.join(__dirname, '.env'); // .env file in root folder
 const URL_API = process.env.APP_URL + '/api'
 
+modelDownloader = new ModelDownloader();
+
+async function downloadModelsBeforeStart() {
+  try {
+    console.log('Starting background model sync...');
+    const result = await modelDownloader.syncModels(true); // silent mode
+    modelsReady = true;
+    console.log(`Background model sync completed - Downloaded: ${result.downloaded}/${result.total} files`);
+  } catch (error) {
+    console.error('Background model sync failed:', error);
+    modelsReady = false;
+  }
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
+    show: false, // Jangan tampilkan dulu sampai models ready
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -28,10 +47,22 @@ function createWindow() {
 
   mainWindow.loadFile('src/html/login.html');
 
+  // Tampilkan window setelah ready
+  mainWindow.once('ready-to-show', () => {
+    mainWindow.show();
+  });
+
   // mainWindow.webContents.openDevTools(); // For debugging
 }
 
-app.whenReady().then(() => {
+downloadModelsBeforeStart();
+
+app.whenReady().then(async () => {
+  if (!modelsReady) {
+    console.log('Waiting for model download to complete...');
+    await downloadModelsBeforeStart();
+  }
+
   createWindow();
 
   app.on('activate', () => {
@@ -44,6 +75,22 @@ app.on('window-all-closed', () => {
     pythonProcess.kill();
   }
   if (process.platform !== 'darwin') app.quit();
+});
+
+ipcMain.handle('check-models-status', async () => {
+  return { ready: modelsReady };
+});
+
+ipcMain.handle('sync-models', async () => {
+  try {
+    const result = await modelDownloader.syncModels(false); // verbose mode
+    return {
+      success: true,
+      message: `Models synced successfully - Downloaded: ${result.downloaded}/${result.total} files`
+    };
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
 });
 
 ipcMain.handle('login', async (event, { email, password }) => {
