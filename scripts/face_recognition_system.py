@@ -14,24 +14,21 @@ from facenet_pytorch import MTCNN, InceptionResnetV1
 from sklearn.metrics.pairwise import cosine_similarity
 import os
 from dotenv import load_dotenv
-import sys
+import sys  
 import json
+import requests
 
 class FaceRecognitionSystem:
     def __init__(self):
         self.receive_electron_params()
 
         load_dotenv(self.env_path)
-        self.db_name = os.getenv("DB_DATABASE")
-        self.db_username = os.getenv("DB_USERNAME")
-        self.db_password = os.getenv("DB_PASSWORD")
-
-        self.setup_database()
+        self.app_url = os.getenv("APP_URL")
         self.initialize_models()
         self.setup_camera()
         self.load_resources()
         self.initialize_variables()
-        
+
     def receive_electron_params(self):
         try:
             params_json = sys.stdin.readline()
@@ -39,33 +36,24 @@ class FaceRecognitionSystem:
 
             self.selected_class_id = params.get("selected_class_id")
             self.selected_class_name = params.get("selected_class_name")
-            self.selected_course_id = params.get("selected_course_id")
-            self.selected_course_name = params.get("selected_course_name")
-            self.project_path = params.get("project_path") # Might be better to determine this within Electron
-            self.env_path = params.get("env_path") # This will be crucial
+            self.project_path = params.get("project_path")
+            self.tipe_absen = params.get("tipe_absen")
+            self.env_path = params.get("env_path")
 
-            if not all([self.selected_class_id, self.selected_class_name, self.selected_course_id, self.selected_course_name, self.project_path, self.env_path]):
+            if not all(
+                [
+                    self.selected_class_id,
+                    self.selected_class_name,
+                    self.project_path,
+                    self.env_path,
+                ]
+            ):
                 print("Error: Missing parameters from Electron.")
-                sys.exit(1) # Exit if crucial params are missing
+                sys.exit(1)
 
         except Exception as e:
             print(f"Error receiving parameters from Electron: {e}")
             sys.exit(1)
-            
-    def setup_database(self):
-        dbconfig = {
-            "host": "localhost",
-            "user": self.db_username,
-            "password": self.db_password,
-            "database": self.db_name,
-        }
-        self.pool = pooling.MySQLConnectionPool(
-            pool_name="student_management_pool",
-            pool_size=5,
-            **dbconfig,
-        )
-        self.conn = self.pool.get_connection()
-        self.cursor = self.conn.cursor()
 
     def initialize_models(self):
         self.device = "cpu"
@@ -77,9 +65,7 @@ class FaceRecognitionSystem:
         self.inception_resnet = (
             InceptionResnetV1(pretrained="vggface2").eval().to(self.device)
         )
-        self.svm_model = joblib.load(
-            f"{self.project_path}/scripts/Model/svm_model.pkl"
-        )
+        self.svm_model = joblib.load(f"{self.project_path}/scripts/Model/svm_model.pkl")
         self.label_encoder_classes = np.load(
             f"{self.project_path}/scripts/Model/label_encoder_classes.npy"
         )
@@ -100,8 +86,8 @@ class FaceRecognitionSystem:
         self.cap.set(3, 960)
         self.cap.set(4, 720)
         self.cap.set(cv2.CAP_PROP_BUFFERSIZE, 1)
-        # cv2.namedWindow("Face Recognition", cv2.WINDOW_NORMAL)
-        cv2.namedWindow("Face Recognition", cv2.WINDOW_FULLSCREEN)
+        cv2.namedWindow("Face Recognition", cv2.WINDOW_NORMAL)
+        # cv2.namedWindow("Face Recognition", cv2.WINDOW_FULLSCREEN)
         cv2.resizeWindow("Face Recognition", 1920, 1080)
 
     def load_resources(self):
@@ -130,57 +116,48 @@ class FaceRecognitionSystem:
         self.max_cache_size = 1000
         # self.cache_cleanup_threshold = 0.8
 
-
     def get_student_info(self, predicted_name):
         try:
-            query = """
-                SELECT m.*, k.nama AS kelas_nama
-                FROM `mahasiswas` m
-                JOIN `kelas` k ON m.kelas_id = k.id
-                WHERE m.id LIKE %s;
-            """
-            self.cursor.execute(query, (f"%{predicted_name}%",))
-            student_info = self.cursor.fetchone()
-            if student_info:
-                return student_info
+            url = f"{self.app_url}/api/siswa/{predicted_name}"
+            response = requests.get(url)
+            if response.status_code == 200:
+                return response.json()
             else:
-                print("Mahasiswa tidak ditemukan.")
+                print("Siswa tidak ditemukan atau error:", response.text)
                 return None
-        except mysql.connector.Error as err:
-            print(f"Terjadi error: {err}")
+        except requests.RequestException as e:
+            print("Error request:", e)
+            return None
 
-    def insert_absensi(self, kelas_id, mata_kuliah_id, mahasiswa_id):
+    def insert_absensi(self, siswa_id, kelas_id, tanggal=None, waktu_masuk=None, waktu_keluar=None, tipe_absen="masuk"):
+        if tanggal is None:
+            tanggal = datetime.today().strftime("%Y-%m-%d")
+        
+        if self.tipe_absen == "masuk":
+            waktu_keluar = None
+            
+        payload = {
+            "siswa_id": siswa_id,
+            "kelas_id": kelas_id,
+            "tanggal": tanggal,
+            "waktu_masuk": waktu_masuk,
+            "waktu_keluar": waktu_keluar,
+            "tipe_absen": tipe_absen,
+        }
+        print("Payload untuk absensi:", payload)
         try:
-            today_date = datetime.today().strftime("%Y-%m-%d")
-            query_check = """
-                SELECT * FROM `absensis`
-                WHERE `kelas_id` = %s
-                AND `mata_kuliah_id` = %s
-                AND `mahasiswa_id` = %s
-                AND DATE(`tanggal`) LIKE %s;
-            """
-            self.cursor.execute(
-                query_check, (kelas_id, mata_kuliah_id, mahasiswa_id, f"%{today_date}%")
-            )
-            existing_record = self.cursor.fetchone()
-
-            if existing_record:
-                print("Data absensi sudah ada untuk tanggal tersebut.")
+            url = f"{self.app_url}/api/siswa/create"
+            response = requests.post(url, json=payload)
+            if response.status_code in (200, 201):
+                print("Absensi berhasil:", response.json())
+                return True
+            else:
+                print("Gagal input absensi:", response.status_code, response.text)
                 return False
-
-            query_insert = """
-                INSERT INTO `absensis` (`kelas_id`, `mata_kuliah_id`, `mahasiswa_id`)
-                VALUES (%s, %s, %s);
-            """
-            self.cursor.execute(query_insert, (kelas_id, mata_kuliah_id, mahasiswa_id))
-            self.conn.commit()
-            print("Data berhasil ditambahkan.")
-            return True
-
-        except mysql.connector.Error as err:
-            print(f"Terjadi error: {err}")
+        except requests.RequestException as e:
+            print("Error request:", e)
             return False
-
+        
     def add_text_with_custom_font(
         self,
         image,
@@ -315,7 +292,7 @@ class FaceRecognitionSystem:
 
         frame_with_background = self.add_text_with_custom_font(
             frame_with_background,
-            f"{self.selected_class_name} - {self.selected_course_name}",
+            f"{self.selected_class_name} | Absen {self.tipe_absen.capitalize()}",
             (20, 35),
             35,
             (65, 65, 65),
@@ -359,30 +336,30 @@ class FaceRecognitionSystem:
                             self.detected_time = current_time
 
                             studentInfo = self.get_student_info(predicted_name)
-                            print(studentInfo)
-
-                            if studentInfo[6] == self.selected_class_name:
+                            
+                            if studentInfo and int(studentInfo.get('kelas', {}).get('id')) == int(self.selected_class_id):
                                 imgPath = f"{self.project_path}/scripts/Images/{predicted_name}/profile.jpg"
                                 if not os.path.exists(imgPath):
-                                    print(
-                                        f"Error: No such file '{imgPath}' in local storage."
-                                    )
+                                    print(f"Error: No such file '{imgPath}' in local storage.")
                                     return frame_with_background
 
                                 imgStudent = cv2.imread(imgPath)
                                 imgStudent_resized = cv2.resize(imgStudent, (370, 370))
 
                                 self.current_student_info = {
-                                    "id": str(studentInfo[0]),
-                                    "name": studentInfo[1],
-                                    "class": studentInfo[6],
+                                    "id": str(studentInfo['id']),
+                                    "name": studentInfo['nama'],
+                                    "class": studentInfo['kelas']['nama'],
                                 }
                                 self.current_student_img = imgStudent_resized
 
                                 if self.insert_absensi(
-                                    self.selected_class_id,
-                                    self.selected_course_id,
-                                    studentInfo[0],
+                                    siswa_id=studentInfo['id'],
+                                    kelas_id=self.selected_class_id,
+                                    tanggal=datetime.today().strftime("%Y-%m-%d"),
+                                    waktu_masuk=datetime.now().strftime("%H:%M"),
+                                    waktu_keluar=datetime.now().strftime("%H:%M"),
+                                    tipe_absen=self.tipe_absen
                                 ):
                                     self.modeType = 2
                                 else:
