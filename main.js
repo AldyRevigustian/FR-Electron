@@ -1,4 +1,4 @@
-// main.js
+
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
@@ -6,7 +6,7 @@ const { spawn } = require('child_process');
 require('dotenv').config();
 
 const ElectronStore = require('electron-store').default;
-const ModelDownloader = require('./modelDownloader'); // Import model downloader
+const ModelDownloader = require('./modelDownloader');
 
 const store = new ElectronStore();
 let mainWindow;
@@ -16,7 +16,7 @@ let modelsReady = false;
 
 const PYTHON_EXECUTABLE = process.platform === 'win32' ? 'python' : 'python3';
 const PYTHON_SCRIPT_PATH = path.join(__dirname, '/scripts/', 'main.py');
-const envFilePath = path.join(__dirname, '.env'); // .env file in root folder
+const envFilePath = path.join(__dirname, '.env');
 const URL_API = process.env.APP_URL + '/api'
 
 modelDownloader = new ModelDownloader();
@@ -24,7 +24,7 @@ modelDownloader = new ModelDownloader();
 async function downloadModelsBeforeStart() {
   try {
     console.log('Starting background model sync...');
-    const result = await modelDownloader.syncModels(true); // silent mode
+    const result = await modelDownloader.syncModels(true);
     modelsReady = true;
     console.log(`Background model sync completed - Downloaded: ${result.downloaded}/${result.total} files`);
   } catch (error) {
@@ -37,7 +37,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    show: false, // Jangan tampilkan dulu sampai models ready
+    show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -47,12 +47,12 @@ function createWindow() {
 
   mainWindow.loadFile('src/html/login.html');
 
-  // Tampilkan window setelah ready
+
   mainWindow.once('ready-to-show', () => {
     mainWindow.show();
   });
 
-  // mainWindow.webContents.openDevTools(); // For debugging
+
 }
 
 downloadModelsBeforeStart();
@@ -83,7 +83,7 @@ ipcMain.handle('check-models-status', async () => {
 
 ipcMain.handle('sync-models', async () => {
   try {
-    const result = await modelDownloader.syncModels(false); // verbose mode
+    const result = await modelDownloader.syncModels(false);
     return {
       success: true,
       message: `Models synced successfully - Downloaded: ${result.downloaded}/${result.total} files`
@@ -122,7 +122,7 @@ ipcMain.handle('login', async (event, { email, password }) => {
         }
       });
       const kelasData = await res.json();
-      // console.log(kelasData);
+
       console.log('Kelas data:', kelasData.data);
 
       return {
@@ -201,7 +201,6 @@ ipcMain.on('start-recognition', (event, { classId, className, courseId, courseNa
   });
 });
 
-// Navigate to different pages
 ipcMain.on('navigate', (event, page) => {
   const pagePath = path.join(__dirname, `src/html/${page}.html`);
   if (fs.existsSync(pagePath)) {
