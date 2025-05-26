@@ -24,4 +24,10 @@ async function checkErrorDetails() {
     }
 }
 
-checkErrorDetails().catch(console.error);
+if (require.main === module) {
+    checkErrorDetails().catch(console.error);
+}
+
+module.exports = {
+    checkErrorDetails
+};

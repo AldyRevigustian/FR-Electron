@@ -28,7 +28,6 @@ async function debugAPI() {
         console.log('');
     }
     
-
     console.log('3. Testing alternative endpoints...');
     const testUrls = [
         `${downloader.laravelBaseUrl}/api/models/list`,
@@ -62,4 +61,10 @@ async function debugAPI() {
     console.log('=== Debug Complete ===');
 }
 
-debugAPI().catch(console.error);
+if (require.main === module) {
+    debugAPI().catch(console.error);
+}
+
+module.exports = {
+    debugAPI
+};
