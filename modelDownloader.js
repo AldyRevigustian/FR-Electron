@@ -1,24 +1,28 @@
-const { app } = require('electron');
 const https = require('https');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { URL } = require('url');
 
 class ModelDownloader {
     constructor() {
-
         this.laravelBaseUrl = process.env.APP_URL || 'http://localhost:8000';
-        this.localModelPath = 'D:\\Electron-FR\\scripts\\Model';
+        
+        // Use relative path for packaged app
+        const { app } = require('electron');
+        const path = require('path');
+        
+        if (app && app.isPackaged) {
+            this.localModelPath = path.join(process.resourcesPath, 'scripts', 'Model');
+        } else {
+            this.localModelPath = path.join(__dirname, 'scripts', 'Model');
+        }
+        
         this.apiEndpoint = '/api/models';
+        console.log('ModelDownloader initialized with path:', this.localModelPath);
 
         this.ensureDirectoryExists();
     }
 
-
-    /**
-     * Test models endpoint specifically
-     */
     async testModelsEndpoint() {
         return new Promise((resolve, reject) => {
             const url = `${this.laravelBaseUrl}${this.apiEndpoint}/list`;
@@ -40,9 +44,6 @@ class ModelDownloader {
         });
     }
 
-    /**
-     * Pastikan direktori model local exists
-     */
     ensureDirectoryExists() {
         try {
             if (!fs.existsSync(this.localModelPath)) {
@@ -116,9 +117,6 @@ class ModelDownloader {
         });
     }
 
-    /**
-     * Try downloading from multiple URLs
-     */
     tryDownloadFromUrls(urls, fileName, silent, urlIndex, resolve, reject) {
         if (urlIndex >= urls.length) {
             reject(new Error(`Failed to download ${fileName} from all attempted URLs`));
@@ -211,9 +209,6 @@ class ModelDownloader {
         });
     }
 
-    /**
-     * Original download method (kept for backward compatibility)
-     */
     async downloadFileSingle(fileName, silent = true) {
         return new Promise((resolve, reject) => {
             const url = `${this.laravelBaseUrl}${this.apiEndpoint}/download/${fileName}`;
@@ -268,9 +263,6 @@ class ModelDownloader {
         });
     }
 
-    /**
-     * Cek apakah file perlu diupdate berdasarkan timestamp
-     */
     needsUpdate(localFile, remoteModified) {
         try {
             if (!fs.existsSync(localFile)) {
@@ -285,9 +277,8 @@ class ModelDownloader {
         } catch (error) {
             return true;
         }
-    }    /**
-     * Sync semua model files dengan mode background
-     */
+    }    
+
     async syncModels(silent = true) {
         try {
             if (!silent) console.log('Starting model synchronization...');
@@ -344,9 +335,8 @@ class ModelDownloader {
             if (!silent) console.error('Error during model sync:', error);
             throw error;
         }
-    }/**
-     * Helper method untuk HTTP requests
-     */
+    }
+    
     makeRequest(url, callback) {
         const protocol = url.startsWith('https') ? https : http;
 

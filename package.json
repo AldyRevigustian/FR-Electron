@@ -4,20 +4,51 @@
   "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dist": "electron-builder"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "electron": "^36.3.1"
+    "electron": "^36.3.1",
+    "electron-builder": "^26.0.12",
+    "electron-packager": "^17.1.2"
   },
   "dependencies": {
     "axios": "^1.9.0",
     "dotenv": "^16.5.0",
-    "electron-store": "^10.0.1",
-    "form-data": "^4.0.2",
-    "node-fetch": "^3.3.2"
+    "form-data": "^4.0.2"
+  },
+  "build": {
+    "appId": "com.electron.fr",
+    "productName": "Electron FR",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      ".env",
+      "main.js",
+      "preload.js",
+      "modelDownloader.js",
+      "src/**/*",
+      "scripts/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "scripts",
+        "to": "scripts"
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }

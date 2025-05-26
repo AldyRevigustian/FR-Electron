@@ -1,23 +1,37 @@
-
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
-require('dotenv').config();
 
-const ElectronStore = require('electron-store').default;
+// Configure dotenv with proper path for both dev and production
+const envPath = app.isPackaged 
+  ? path.join(__dirname, '.env')
+  : path.join(__dirname, '.env');
+
+require('dotenv').config({ path: envPath });
+
 const ModelDownloader = require('./modelDownloader');
 
-const store = new ElectronStore();
 let mainWindow;
 let pythonProcess;
 let modelDownloader;
 let modelsReady = false;
 
 const PYTHON_EXECUTABLE = process.platform === 'win32' ? 'python' : 'python3';
-const PYTHON_SCRIPT_PATH = path.join(__dirname, '/scripts/', 'main.py');
-const envFilePath = path.join(__dirname, '.env');
-const URL_API = process.env.APP_URL + '/api'
+const PYTHON_SCRIPT_PATH = app.isPackaged
+  ? path.join(process.resourcesPath, 'scripts', 'main.py')
+  : path.join(__dirname, 'scripts', 'main.py');
+const envFilePath = app.isPackaged
+  ? path.join(process.resourcesPath, '.env')
+  : path.join(__dirname, '.env');
+const URL_API = process.env.APP_URL + '/api';
+
+// Debug logging for environment variables
+console.log('Environment variables loaded:');
+console.log('APP_URL:', process.env.APP_URL);
+console.log('URL_API:', URL_API);
+console.log('envPath:', envPath);
+console.log('envFilePath:', envFilePath);
 
 modelDownloader = new ModelDownloader();
 
@@ -39,13 +53,17 @@ function createWindow() {
     height: 600,
     show: false,
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: app.isPackaged
+        ? path.join(__dirname, 'preload.js')
+        : path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       enableRemoteModule: false,
     },
   });
 
-  mainWindow.loadFile('src/html/login.html');
+  mainWindow.loadFile(app.isPackaged
+    ? path.join(__dirname, 'src/html/login.html')
+    : 'src/html/login.html');
 
 
   mainWindow.once('ready-to-show', () => {
@@ -97,12 +115,24 @@ ipcMain.handle('login', async (event, { email, password }) => {
   const axios = require('axios');
   const FormData = require('form-data');
 
+  // Validate URL_API
+  if (!process.env.APP_URL || process.env.APP_URL === 'undefined') {
+    console.error('APP_URL is not defined in environment variables');
+    return { 
+      success: false, 
+      message: 'Server configuration error: APP_URL not found. Please check .env file.' 
+    };
+  }
+
+  const API_URL = process.env.APP_URL + '/api';
+  console.log('Using API URL for login:', API_URL);
+
   const data = new FormData();
   data.append('email', email);
   data.append('password', password);
 
   try {
-    const response = await axios.post(URL_API + '/guru/login', data, {
+    const response = await axios.post(API_URL + '/guru/login', data, {
       headers: data.getHeaders(),
       maxBodyLength: Infinity,
     });
@@ -110,18 +140,14 @@ ipcMain.handle('login', async (event, { email, password }) => {
     const resData = response.data;
 
     if (resData.token && resData.user) {
-      store.set('auth.token', resData.token);
-      store.set('auth.email', resData.user.email);
-      store.set('auth.name', resData.user.nama);
-
-      const res = await fetch('http://127.0.0.1:8000/api/guru/kelas', {
+      const kelasResponse = await axios.get('http://127.0.0.1:8000/api/guru/kelas', {
         headers: {
           'Authorization': `Bearer ${resData.token}`,
           'Content-Type': 'application/json',
           'Accept': 'application/json'
         }
       });
-      const kelasData = await res.json();
+      const kelasData = kelasResponse.data;
 
       console.log('Kelas data:', kelasData.data);
 
@@ -156,18 +182,25 @@ ipcMain.on('start-recognition', (event, { classId, className, tipeAbsen }) => {
     pythonProcess.kill();
   }
 
-  const projectPath = app.getAppPath();
+  // Get proper project path for both dev and packaged app
+  const projectPath = app.isPackaged 
+    ? process.resourcesPath 
+    : app.getAppPath();
+    
   const paramsForPython = JSON.stringify({
     selected_class_id: classId,
     selected_class_name: className,
     project_path: projectPath,
     env_path: envFilePath,
     tipe_absen: tipeAbsen,
+    is_packaged: app.isPackaged
   });
 
   console.log(`Starting Python script: ${PYTHON_EXECUTABLE} ${PYTHON_SCRIPT_PATH}`);
+  console.log(`Project path: ${projectPath}`);
+  console.log(`Env file path: ${envFilePath}`);
+  console.log(`Is packaged: ${app.isPackaged}`);
   console.log(`With parameters: ${paramsForPython}`);
-  console.log(`Using .env file at: ${envFilePath}`);
 
   pythonProcess = spawn(PYTHON_EXECUTABLE, [PYTHON_SCRIPT_PATH], {
     stdio: ['pipe', 'pipe', 'pipe'],
@@ -201,7 +234,9 @@ ipcMain.on('start-recognition', (event, { classId, className, tipeAbsen }) => {
 });
 
 ipcMain.on('navigate', (event, page) => {
-  const pagePath = path.join(__dirname, `src/html/${page}.html`);
+  const pagePath = app.isPackaged
+    ? path.join(__dirname, `src/html/${page}.html`)
+    : path.join(__dirname, `src/html/${page}.html`);
   if (fs.existsSync(pagePath)) {
     mainWindow.loadFile(pagePath);
   } else {

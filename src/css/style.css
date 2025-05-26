@@ -322,7 +322,7 @@ body::after {
 
 .select-group {
     position: relative;
-    margin-bottom: 30px;
+    margin-bottom: 10px;
 }
 
 .select-icon {
@@ -402,8 +402,7 @@ body::after {
 /* Messages styling */
 #pythonMessages {
     margin-top: 20px;
-    margin-bottom: 10px;
-    /* min-height: 60px; */
+    margin-bottom: 20px;
 }
 
 #pythonMessages p {
