@@ -150,7 +150,7 @@ ipcMain.handle('login', async (event, { email, password }) => {
   }
 });
 
-ipcMain.on('start-recognition', (event, { classId, className, courseId, courseName }) => {
+ipcMain.on('start-recognition', (event, { classId, className, tipeAbsen }) => {
   if (pythonProcess) {
     console.log('Recognition already running. Killing previous process.');
     pythonProcess.kill();
@@ -160,10 +160,9 @@ ipcMain.on('start-recognition', (event, { classId, className, courseId, courseNa
   const paramsForPython = JSON.stringify({
     selected_class_id: classId,
     selected_class_name: className,
-    selected_course_id: courseId,
-    selected_course_name: courseName,
     project_path: projectPath,
-    env_path: envFilePath
+    env_path: envFilePath,
+    tipe_absen: tipeAbsen,
   });
 
   console.log(`Starting Python script: ${PYTHON_EXECUTABLE} ${PYTHON_SCRIPT_PATH}`);

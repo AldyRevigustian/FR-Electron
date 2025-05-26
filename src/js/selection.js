@@ -37,8 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const params = {
             classId: parseInt(selectedClassOption.value),
             className: selectedClassOption.text,
-            courseId: null,
-            courseName: null,
+            tipeAbsen: "masuk",
         };
 
         console.log('Starting recognition with:', params);
