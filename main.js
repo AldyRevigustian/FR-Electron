@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
 
-// Configure dotenv with proper path for both dev and production
 const envPath = app.isPackaged 
   ? path.join(__dirname, '.env')
   : path.join(__dirname, '.env');
@@ -26,7 +25,6 @@ const envFilePath = app.isPackaged
   : path.join(__dirname, '.env');
 const URL_API = process.env.APP_URL + '/api';
 
-// Debug logging for environment variables
 console.log('Environment variables loaded:');
 console.log('APP_URL:', process.env.APP_URL);
 console.log('URL_API:', URL_API);
@@ -115,7 +113,6 @@ ipcMain.handle('login', async (event, { email, password }) => {
   const axios = require('axios');
   const FormData = require('form-data');
 
-  // Validate URL_API
   if (!process.env.APP_URL || process.env.APP_URL === 'undefined') {
     console.error('APP_URL is not defined in environment variables');
     return { 
@@ -182,7 +179,6 @@ ipcMain.on('start-recognition', (event, { classId, className, tipeAbsen }) => {
     pythonProcess.kill();
   }
 
-  // Get proper project path for both dev and packaged app
   const projectPath = app.isPackaged 
     ? process.resourcesPath 
     : app.getAppPath();

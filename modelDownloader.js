@@ -7,7 +7,6 @@ class ModelDownloader {
     constructor() {
         this.laravelBaseUrl = process.env.APP_URL || 'http://localhost:8000';
         
-        // Use relative path for packaged app
         const { app } = require('electron');
         const path = require('path');
         
