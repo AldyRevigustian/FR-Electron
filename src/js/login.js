@@ -1,4 +1,3 @@
-// src/js/login.js
 document.addEventListener('DOMContentLoaded', () => {
     const loginForm = document.getElementById('loginForm');
     const emailInput = document.getElementById('email');
@@ -18,10 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('auth.email', result.user.email);
                 localStorage.setItem('auth.name', result.user.nama);
 
-                // Simpan kelas ke localStorage
                 localStorage.setItem('auth.kelas', JSON.stringify(result.kelas));
 
-                window.electronAPI.navigate('selection'); // Navigate to selection page
+                window.electronAPI.navigate('selection'); 
             } else {
                 errorMessage.textContent = result.message || 'Login failed.';
             }

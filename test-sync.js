@@ -6,7 +6,7 @@ async function testSync() {
     console.log('=== Testing Improved Sync Method ===');
     
     try {
-        const result = await downloader.syncModels(false); // verbose mode
+        const result = await downloader.syncModels(false);
         console.log('\nSync Result:', result);
     } catch (error) {
         console.error('Sync Error:', error.message);

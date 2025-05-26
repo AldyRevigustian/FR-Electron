@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     const startButton = document.getElementById('startButton');
     const pythonMessages = document.getElementById('pythonMessages');
 
-    // 🔄 Ambil data kelas dari electron-store
     try {
         const classSelect = document.getElementById('classSelect');
         const kelas = JSON.parse(localStorage.getItem('auth.kelas') || '[]');
@@ -16,7 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
             classSelect.appendChild(option);
         });
 
-        // Ambil token dari localStorage jika perlu buat API lagi
         const token = localStorage.getItem('auth.token');
         console.log('Token:', token);
 
@@ -26,7 +24,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         return;
     }
 
-    // ⏯ Saat form disubmit (memulai absensi)
     selectionForm.addEventListener('submit', (event) => {
         event.preventDefault();
         pythonMessages.innerHTML = '';
@@ -51,7 +48,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         pythonMessages.innerHTML = '<p class="info">Memulai proses absensi...</p>';
     });
 
-    // ⛔ Jika Python error
+
     window.electronAPI.onPythonError((message) => {
         const p = document.createElement('p');
         p.className = 'error';
@@ -61,7 +58,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         startButton.innerHTML = '<span>Mulai Absensi</span>';
     });
 
-    // ✅ Jika absensi selesai
+
     window.electronAPI.onRecognitionFinished((message) => {
         const p = document.createElement('p');
         p.className = 'success';
@@ -71,7 +68,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         startButton.innerHTML = '<span>Mulai Absensi</span>';
     });
 
-    // 🧹 Cleanup listener saat halaman ditutup
+
     window.addEventListener('beforeunload', () => {
         window.electronAPI.removeAllPythonErrorListeners();
         window.electronAPI.removeAllRecognitionFinishedListeners();
