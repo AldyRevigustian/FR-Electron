@@ -338,12 +338,27 @@ class FaceRecognitionSystem:
                             studentInfo = self.get_student_info(predicted_name)
                             
                             if studentInfo and int(studentInfo.get('kelas', {}).get('id')) == int(self.selected_class_id):
-                                imgPath = f"{self.project_path}/scripts/Images/{predicted_name}/profile.jpg"
-                                if not os.path.exists(imgPath):
-                                    print(f"Error: No such file '{imgPath}' in local storage.")
+                                # imgPath = f"{self.project_path}/scripts/Images/{predicted_name}/profile.jpg"
+                                # if not os.path.exists(imgPath):
+                                #     print(f"Error: No such file '{imgPath}' in local storage.")
+                                #     return frame_with_background
+
+                                # imgStudent = cv2.imread(imgPath)
+                                
+                                img_url = f"{self.app_url}/api/siswa/profile/{predicted_name}"
+                                # img_url = f"{self.app_url}/api/profile-image/{predicted_name}"
+                                try:
+                                    response = requests.get(img_url, stream=True)
+                                    if response.status_code == 200:
+                                        img_array = np.asarray(bytearray(response.content), dtype=np.uint8)
+                                        imgStudent = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
+                                    else:
+                                        print("Gagal mengambil gambar dari API:", response.status_code)
+                                        return frame_with_background
+                                except Exception as e:
+                                    print("Terjadi error saat ambil gambar:", e)
                                     return frame_with_background
 
-                                imgStudent = cv2.imread(imgPath)
                                 imgStudent_resized = cv2.resize(imgStudent, (370, 370))
 
                                 self.current_student_info = {

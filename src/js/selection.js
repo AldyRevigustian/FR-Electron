@@ -1,6 +1,7 @@
 document.addEventListener('DOMContentLoaded', async () => {
     const selectionForm = document.getElementById('selectionForm');
     const classSelect = document.getElementById('classSelect');
+    const attendanceSelect = document.getElementById('attendanceSelect');
     const startButton = document.getElementById('startButton');
     const pythonMessages = document.getElementById('pythonMessages');
 
@@ -22,9 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Gagal memuat data kelas dari store:', error);
         pythonMessages.innerHTML = `<p class="error">Gagal memuat daftar kelas: ${error.message}</p>`;
         return;
-    }
-
-    selectionForm.addEventListener('submit', (event) => {
+    }    selectionForm.addEventListener('submit', (event) => {
         event.preventDefault();
         pythonMessages.innerHTML = '';
 
@@ -34,17 +33,23 @@ document.addEventListener('DOMContentLoaded', async () => {
             return;
         }
 
+        const selectedAttendanceOption = attendanceSelect.options[attendanceSelect.selectedIndex];
+        if (!selectedAttendanceOption || !selectedAttendanceOption.value) {
+            pythonMessages.innerHTML = '<p class="error">Silakan pilih tipe absensi terlebih dahulu!</p>';
+            return;
+        }
+
         const params = {
             classId: parseInt(selectedClassOption.value),
             className: selectedClassOption.text,
-            tipeAbsen: "masuk",
+            tipeAbsen: selectedAttendanceOption.value,
         };
 
         console.log('Starting recognition with:', params);
         window.electronAPI.startRecognition(params);
         startButton.disabled = true;
         startButton.innerHTML = '<span>Memulai...</span>';
-        pythonMessages.innerHTML = '<p class="info">Memulai proses absensi...</p>';
+        pythonMessages.innerHTML = `<p class="info">Memulai proses absensi ${selectedAttendanceOption.text.toLowerCase()}...</p>`;
     });
 
 

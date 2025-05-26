@@ -30,8 +30,7 @@
             <h1>Pilih Kelas</h1>
             <p class="subtitle">Pilih kelas untuk memulai absensi</p>
         </div>
-        <form id="selectionForm">
-            <div class="select-group">
+        <form id="selectionForm">            <div class="select-group">
                 <div class="select-icon">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 3L1 9L12 15L21 10.09V17H23V9L12 3Z" fill="#7A78AA"/>
@@ -42,6 +41,26 @@
                 <div class="custom-select-wrapper">
                     <select id="classSelect" name="classSelect" required>
                         <option value="" disabled selected>Pilih kelas Anda</option>
+                    </select>
+                    <div class="select-arrow">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 10L12 15L17 10H7Z" fill="#7A78AA"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <div class="select-group">
+                <div class="select-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1L13.5 2.5L16.17 5.17L10.58 10.76C10.22 11.12 10 11.6 10 12.1V23H12V16H14V23H16V12.1C16 11.6 15.78 11.12 15.42 10.76L21 9Z" fill="#7A78AA"/>
+                    </svg>
+                </div>
+                <label for="attendanceSelect">Tipe Absensi</label>
+                <div class="custom-select-wrapper">
+                    <select id="attendanceSelect" name="attendanceSelect" required>
+                        <option value="" disabled selected>Pilih tipe absensi</option>
+                        <option value="masuk">Absen Masuk</option>
+                        <option value="keluar">Absen Keluar</option>
                     </select>
                     <div class="select-arrow">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
